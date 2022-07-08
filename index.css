@@ -1,0 +1,21 @@
+.wrapper {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(14, 36px);
+  grid-template-rows: repeat(10, 36px);
+}
+
+.cell {
+  /* border: 2px solid grey; */
+}
+
+.cell img {
+  width: 36px;
+  height: 36px;
+  /* border: 2px solid red; */
+}
+
+.selected-cell {
+  border: 2px dashed rgb(179, 0, 250);
+  border-radius: 10px;
+}
