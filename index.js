@@ -1,10 +1,19 @@
 //x: start coord: 8, end coord: 580
 //y: start coord: 8, end coord: 404
+
+//The images are currently entered manually, to change it we must use serverside framework
 let images = ["01", "01_1", "01_2", "01_3", "01_4", "01_5", "02"]
+//Distance between 2 adjacent tiles along one axis. The distance is calculated between each of the tiles' top-left corner.
 const GAP = 44
+//Currently selected tiles. Both can be "selected", but as soon as the second one is selected, they get de-selected after
+//determining whether they get deleted or not
+firstSelected = {}
+secondSelected = {}
 
 populateRows()
 
+//Populates the grid with tiles, each tile having a random picture selected from the images variable.
+//The grid layouts are located in coordinates.js
 function populateRows() {
   let wrapper = document.querySelector(".wrapper")
 
@@ -34,10 +43,7 @@ function getRandomImage() {
   return `icons_first/${images[img]}.png`
 }
 
-
-firstSelected = {}
-secondSelected = {}
-
+//Selects a tile based on the tile you've clicked on. When a second tile is selected, determines if they are to be deleted or not.
 function handleIconClick(event) {
   if (Object.keys(firstSelected).length === 0) {
     firstSelected = selectIcon(event, firstSelected)
@@ -47,7 +53,6 @@ function handleIconClick(event) {
     checkSelections()
   }
   console.log(firstSelected);
-  // console.log(secondSelected);
 }
 
 function selectIcon(event, selection) {
@@ -61,13 +66,14 @@ function selectIcon(event, selection) {
 }
 
 function checkSelections() {
+  //if images are not the same, deselect and exit.
   if (firstSelected.img !== secondSelected.img) {
     removeBorder()
     firstSelected = {}
     secondSelected = {}
     return
   }
-
+  //Else, check if tiles are to be deleted. If yes - delete. If no, remove visual border. Selections will be cleared regardless.
   if (compareCoordinates()) {
     removeElement(firstSelected)
     removeElement(secondSelected)
@@ -93,104 +99,53 @@ function compareCoordinates() {
 }
 
 function findMeetingSpotOfTiles() {
-  //x
+  //8 + GAP * i is the X or Y of each tile, where i is the (position-1) of the tile along the x/y axis.
+  //So for example the element in the top left corner has an [x,y] of [8,8], the one to the right of it is [52,8] etc.
+
+  //trace x
   for (let i = -1; i <= 14; i++) {
-    // if i === - 1 sets the x to 0 to represent edges of the grid (2 tiles can meet outside of the grid)
-    // else sets it to a location of a tile of the grid. Each tile is located at n * GAP + 8 where n is 
-    // the position of the tile in the grid.
-    let x = 8 + GAP * i
-
-    let firstTileToMoveToward = {"x": x, "y": firstSelected.y}
-    let secondTileToMoveToward = {"x": x, "y": secondSelected.y}
+    let firstTileToMoveToward = { "x": 8 + GAP * i, "y": firstSelected.y}
+    let secondTileToMoveToward = { "x": 8 + GAP * i, "y": secondSelected.y}
 
     console.log(`first selected: ${firstSelected.x},${firstSelected.y}`);
     console.log(`second selected: ${secondSelected.x},${secondSelected.y}`);
     console.log(`first move: ${firstTileToMoveToward.x},${firstTileToMoveToward.y}`);
     console.log(`second move: ${secondTileToMoveToward.x},${secondTileToMoveToward.y}`);
 
-    let isTileAtFirst = isExistsTileAtCoords(firstTileToMoveToward.x, firstTileToMoveToward.y)
-    let isTileAtSecond = isExistsTileAtCoords(secondTileToMoveToward.x, secondTileToMoveToward.y)
-    console.log(`Is there a tile at first to move to? ${isTileAtFirst}`);
-    console.log(`Is there a tile at second to move to? ${isTileAtSecond}`);
-
-    if (firstSelected.x === firstTileToMoveToward.x && firstSelected.y === firstTileToMoveToward.y) isTileAtFirst = false
-    if (secondSelected.x === secondTileToMoveToward.x && secondSelected.y === secondTileToMoveToward.y) isTileAtSecond = false
-
-    let firstSelToFirstMove = checkPathBetweenTiles(firstSelected, firstTileToMoveToward)
-    let secondSelToSecondMove = checkPathBetweenTiles(secondSelected, secondTileToMoveToward)
-    let firstMoveToSecondMove = checkPathBetweenTiles(firstTileToMoveToward, secondTileToMoveToward)
-    console.log(`first selected to first move: ${firstSelToFirstMove}`);
-    console.log(`second selected to second move: ${secondSelToSecondMove}`);
-    console.log(`first move to second move: ${firstMoveToSecondMove}`);
-
-    if (firstSelToFirstMove && secondSelToSecondMove && firstMoveToSecondMove && !isTileAtFirst && !isTileAtSecond) return true
-    // if (!meetingSpotCondition(firstTileToMoveToward, secondTileToMoveToward)) continue
-
-
-    // if (checkPathsAfterMoving(firstTileToMoveToward, secondTileToMoveToward)) return true
+    if (meetingSpotConditions(firstTileToMoveToward, secondTileToMoveToward)) return true
   }
-  //y
+  //trace y
   for (let i = -1; i <= 10; i++) {
-    // if i === - 1 sets the y to 0 to represent edges of the grid (2 tiles can meet outside of the grid)
-    // else sets it to a location of a tile of the grid. Each tile is located at n * GAP + 8 where n is 
-    // the position of the tile in the grid.
-    let y = 8 + GAP * i
-
-    let firstTileToMoveToward = { "x": firstSelected.x, "y": y }
-    let secondTileToMoveToward = { "x": secondSelected.x, "y": y }
+    let firstTileToMoveToward = { "x": firstSelected.x, "y": 8 + GAP * i }
+    let secondTileToMoveToward = { "x": secondSelected.x, "y": 8 + GAP * i }
 
     console.log(`first selected: ${firstSelected.x},${firstSelected.y}`);
     console.log(`second selected: ${secondSelected.x},${secondSelected.y}`);
     console.log(`first move: ${firstTileToMoveToward.x},${firstTileToMoveToward.y}`);
     console.log(`second move: ${secondTileToMoveToward.x},${secondTileToMoveToward.y}`);
 
-    let isTileAtFirst = isExistsTileAtCoords(firstTileToMoveToward.x, firstTileToMoveToward.y)
-    let isTileAtSecond = isExistsTileAtCoords(secondTileToMoveToward.x, secondTileToMoveToward.y)
-    console.log(`Is there a tile at first to move to? ${isTileAtFirst}`);
-    console.log(`Is there a tile at second to move to? ${isTileAtSecond}`);
-
-    if (firstSelected.x === firstTileToMoveToward.x && firstSelected.y === firstTileToMoveToward.y) isTileAtFirst = false
-    if (secondSelected.x === secondTileToMoveToward.x && secondSelected.y === secondTileToMoveToward.y) isTileAtSecond = false
-
-    let firstSelToFirstMove = checkPathBetweenTiles(firstSelected, firstTileToMoveToward)
-    let secondSelToSecondMove = checkPathBetweenTiles(secondSelected, secondTileToMoveToward)
-    let firstMoveToSecondMove = checkPathBetweenTiles(firstTileToMoveToward, secondTileToMoveToward)
-    console.log(`first selected to first move: ${firstSelToFirstMove}`);
-    console.log(`second selected to second move: ${secondSelToSecondMove}`);
-    console.log(`first move to second move: ${firstMoveToSecondMove}`);
-
-    if (firstSelToFirstMove && secondSelToSecondMove && firstMoveToSecondMove && !isTileAtFirst && !isTileAtSecond) return true
-
-    // if (!meetingSpotCondition(firstTileToMoveToward, secondTileToMoveToward)) continue
-
-    // if (checkPathsAfterMoving(firstTileToMoveToward, secondTileToMoveToward)) return true
+    if (meetingSpotConditions(firstTileToMoveToward, secondTileToMoveToward)) return true
   }
   return false
 }
 
-function meetingSpotCondition(firstTileToMoveToward, secondTileToMoveToward) {
-  // Compare coordinates of selected tile and place where we want to move, if coords are same return false.
-  // Also compares coords of first tile where we want to move with the second one
-  if ((firstSelected.x === firstTileToMoveToward.x && firstSelected.y === firstTileToMoveToward.y) ||
-    (secondSelected.x === secondTileToMoveToward.x && secondSelected.y === secondTileToMoveToward.y) ||
-    (firstTileToMoveToward.x === secondTileToMoveToward.x && firstTileToMoveToward.y === secondTileToMoveToward.y)) {
-    return false
-  }
-  //If a tile already exists in the place we want to move to, return false
-  if (isExistsTileAtCoords(firstTileToMoveToward.x, firstTileToMoveToward.y)) {
-    return false
-  }
-  if (isExistsTileAtCoords(secondTileToMoveToward.x, secondTileToMoveToward.y)) {
-    return false
-  }
+function meetingSpotConditions(firstTileToMoveToward, secondTileToMoveToward) {
+  let isTileAtFirst = isExistsTileAtCoords(firstTileToMoveToward.x, firstTileToMoveToward.y)
+  let isTileAtSecond = isExistsTileAtCoords(secondTileToMoveToward.x, secondTileToMoveToward.y)
+  console.log(`Is there a tile at first to move to? ${isTileAtFirst}`);
+  console.log(`Is there a tile at second to move to? ${isTileAtSecond}`);
 
-  return true
-}
+  if (firstSelected.x === firstTileToMoveToward.x && firstSelected.y === firstTileToMoveToward.y) isTileAtFirst = false
+  if (secondSelected.x === secondTileToMoveToward.x && secondSelected.y === secondTileToMoveToward.y) isTileAtSecond = false
 
-function checkPathsAfterMoving(firstTileToMoveToward, secondTileToMoveToward) {
-  if (checkPathBetweenTiles(firstSelected, firstTileToMoveToward) &&
-    checkPathBetweenTiles(secondSelected, secondTileToMoveToward) &&
-    checkPathBetweenTiles(firstTileToMoveToward, secondTileToMoveToward)) return true
+  let firstSelToFirstMove = checkPathBetweenTiles(firstSelected, firstTileToMoveToward)
+  let secondSelToSecondMove = checkPathBetweenTiles(secondSelected, secondTileToMoveToward)
+  let firstMoveToSecondMove = checkPathBetweenTiles(firstTileToMoveToward, secondTileToMoveToward)
+  console.log(`first selected to first move: ${firstSelToFirstMove}`);
+  console.log(`second selected to second move: ${secondSelToSecondMove}`);
+  console.log(`first move to second move: ${firstMoveToSecondMove}`);
+
+  if (firstSelToFirstMove && secondSelToSecondMove && firstMoveToSecondMove && !isTileAtFirst && !isTileAtSecond) return true
   return false
 }
 
