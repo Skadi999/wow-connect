@@ -46,23 +46,23 @@ function getRandomImage() {
 //Selects a tile based on the tile you've clicked on. When a second tile is selected, determines if they are to be deleted or not.
 function handleIconClick(event) {
   if (Object.keys(firstSelected).length === 0) {
-    firstSelected = selectIcon(event, firstSelected)
+    firstSelected = selectIcon(event)
     event.target.classList.add("selected-cell")
   } else if (Object.keys(secondSelected).length === 0) {
-    secondSelected = selectIcon(event, secondSelected)
+    secondSelected = selectIcon(event)
     checkSelections()
   }
   console.log(firstSelected);
 }
 
-function selectIcon(event, selection) {
-  selection = {
+function selectIcon(event) {
+  selectedIcon = {
     "cell": event.target.parentElement,
     "img": event.target.src,
     "x": event.target.getBoundingClientRect().x,
     "y": event.target.getBoundingClientRect().y,
   }
-  return selection
+  return selectedIcon
 }
 
 function checkSelections() {
