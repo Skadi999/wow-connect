@@ -5,17 +5,25 @@
   grid-template-rows: repeat(10, 36px);
 }
 
-.cell {
+/* .cell { */
   /* border: 2px solid grey; */
-}
+/* } */
 
 .cell img {
   width: 36px;
   height: 36px;
-  /* border: 2px solid red; */
+}
+
+.cell img:hover {
+  border: 3px solid green;
+  border-radius: 5px;
 }
 
 .selected-cell {
-  border: 2px dashed rgb(179, 0, 250);
+  border: 3px dashed rgb(109, 0, 152);
   border-radius: 10px;
+}
+
+.selected-cell:hover {
+  background-color: red;
 }

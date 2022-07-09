@@ -2,7 +2,10 @@
 //y: start coord: 8, end coord: 404
 
 //The images are currently entered manually, to change it we must use serverside framework
-let images = ["01", "01_1", "01_2", "01_3", "01_4", "01_5", "02"]
+let imageDirectory = "Warrior"
+let images = ["BattleShout", "Berserker", "BerserkerStance", "Cleave", "Defend", "DefensiveStance", "Demoralizing",
+  "Heroic", "Charge", "Rend", "Retaliation", "Sunder", "Whirlwind", "CommandingShout", "BattleStance", "Overpower",
+"Hamstring", "IntimidatingShout", "ShieldWall", "Shockwave", "SpellReflection"]
 //Distance between 2 adjacent tiles along one axis. The distance is calculated between each of the tiles' top-left corner.
 const GAP = 44
 //Currently selected tiles. Both can be "selected", but as soon as the second one is selected, they get de-selected after
@@ -18,29 +21,79 @@ function populateRows() {
   let wrapper = document.querySelector(".wrapper")
 
   for (let i = 0; i < firstLevel.length; i++) {
-    let split = firstLevel[i].split(',')
-    let cell = document.createElement('div')
-    cell.className = 'cell'
-    cell.style.gridRowStart = parseInt(split[0])
-    cell.style.gridColumnStart = parseInt(split[1])
-
-    let pic = document.createElement('img')
-    pic.className = 'cell-img'
-    pic.src = getRandomImage()
-
-    cell.append(pic)
-
-    cell.addEventListener('click', event => {
-      handleIconClick(event)
-    });
-
+    let cell = createCell(firstLevel[i])
+    // addPictureToCell(cell)
     wrapper.append(cell)
   }
+  populateCellsWithImages()
+}
+
+function populateCellsWithImages() {
+  cells = document.querySelectorAll('.cell')
+  if (cells.length % 2 === 1) throw new Error('Odd number of cells!') 
+
+  pic = getRandomImage()
+  cellsWithoutPics = getCellIndicesWithoutPics(cells)
+
+  while (cellsWithoutPics.length > 0) {
+    randomCellPos = Math.floor(Math.random() * cellsWithoutPics.length);
+    randomCellIndex = cellsWithoutPics[randomCellPos]
+    addGivenPictureToCell(cells[randomCellIndex], pic)
+
+    //do it a second time with the same image to ensure that every image appears an even number of times.
+    cellsWithoutPics = getCellIndicesWithoutPics(cells)
+    randomCellPos = Math.floor(Math.random() * cellsWithoutPics.length);
+    randomCellIndex = cellsWithoutPics[randomCellPos]
+    addGivenPictureToCell(cells[randomCellIndex], pic)
+
+    //Finally generate a new pic and recreate cells without pics.
+    pic = getRandomImage()
+    cellsWithoutPics = getCellIndicesWithoutPics(cells)
+  }
+}
+
+function getCellIndicesWithoutPics(cells) {
+  let cellsWithoutPics = []
+  for (let i = 0; i < cells.length; i++) {
+    if (!cells[i].firstChild) cellsWithoutPics.push(i)
+  }
+  return cellsWithoutPics
+}
+
+function createCell(coords) {
+  // coords parameter: A string representation of the row/column of the cell, separated by a comma, such as "1,2"
+  let splitCoords = coords.split(',')
+  let cell = document.createElement('div')
+  cell.className = 'cell'
+  cell.style.gridRowStart = parseInt(splitCoords[0])
+  cell.style.gridColumnStart = parseInt(splitCoords[1])
+
+  cell.addEventListener('click', event => {
+    handleIconClick(event)
+  });
+
+  return cell
+}
+
+function addGivenPictureToCell(cell, picture) {
+  let pic = document.createElement('img')
+  pic.className = 'cell-img'
+  pic.src = picture
+
+  cell.append(pic)
+}
+
+function addPictureToCell(cell) {
+  let pic = document.createElement('img')
+  pic.className = 'cell-img'
+  pic.src = getRandomImage()
+
+  cell.append(pic)
 }
 
 function getRandomImage() {
   const img = Math.floor(Math.random() * images.length);
-  return `icons_first/${images[img]}.png`
+  return `${imageDirectory}/${images[img]}.png`
 }
 
 //Selects a tile based on the tile you've clicked on. When a second tile is selected, determines if they are to be deleted or not.
@@ -56,7 +109,7 @@ function handleIconClick(event) {
 }
 
 function selectIcon(event) {
-  selectedIcon = {
+  let selectedIcon = {
     "cell": event.target.parentElement,
     "img": event.target.src,
     "x": event.target.getBoundingClientRect().x,
@@ -107,43 +160,33 @@ function findMeetingSpotOfTiles() {
     let firstTileToMoveToward = { "x": 8 + GAP * i, "y": firstSelected.y}
     let secondTileToMoveToward = { "x": 8 + GAP * i, "y": secondSelected.y}
 
-    console.log(`first selected: ${firstSelected.x},${firstSelected.y}`);
-    console.log(`second selected: ${secondSelected.x},${secondSelected.y}`);
-    console.log(`first move: ${firstTileToMoveToward.x},${firstTileToMoveToward.y}`);
-    console.log(`second move: ${secondTileToMoveToward.x},${secondTileToMoveToward.y}`);
-
-    if (meetingSpotConditions(firstTileToMoveToward, secondTileToMoveToward)) return true
+    if (tileConditions(firstTileToMoveToward, secondTileToMoveToward)) return true
   }
   //trace y
   for (let i = -1; i <= 10; i++) {
     let firstTileToMoveToward = { "x": firstSelected.x, "y": 8 + GAP * i }
     let secondTileToMoveToward = { "x": secondSelected.x, "y": 8 + GAP * i }
 
-    console.log(`first selected: ${firstSelected.x},${firstSelected.y}`);
-    console.log(`second selected: ${secondSelected.x},${secondSelected.y}`);
-    console.log(`first move: ${firstTileToMoveToward.x},${firstTileToMoveToward.y}`);
-    console.log(`second move: ${secondTileToMoveToward.x},${secondTileToMoveToward.y}`);
-
-    if (meetingSpotConditions(firstTileToMoveToward, secondTileToMoveToward)) return true
+    if (tileConditions(firstTileToMoveToward, secondTileToMoveToward)) return true
   }
   return false
 }
 
-function meetingSpotConditions(firstTileToMoveToward, secondTileToMoveToward) {
+function tileConditions(firstTileToMoveToward, secondTileToMoveToward) {
+  //Returns true if we pass all the conditions
+
+  //Check whether there is a tile occupying the spot where we want to move to
   let isTileAtFirst = isExistsTileAtCoords(firstTileToMoveToward.x, firstTileToMoveToward.y)
   let isTileAtSecond = isExistsTileAtCoords(secondTileToMoveToward.x, secondTileToMoveToward.y)
-  console.log(`Is there a tile at first to move to? ${isTileAtFirst}`);
-  console.log(`Is there a tile at second to move to? ${isTileAtSecond}`);
-
+  
+  //An exception to the above rule is if the tile we want to move to is occupied by the selected cell
   if (firstSelected.x === firstTileToMoveToward.x && firstSelected.y === firstTileToMoveToward.y) isTileAtFirst = false
   if (secondSelected.x === secondTileToMoveToward.x && secondSelected.y === secondTileToMoveToward.y) isTileAtSecond = false
 
+  //Checks the paths between tiles to see if there is anything in their way
   let firstSelToFirstMove = checkPathBetweenTiles(firstSelected, firstTileToMoveToward)
   let secondSelToSecondMove = checkPathBetweenTiles(secondSelected, secondTileToMoveToward)
   let firstMoveToSecondMove = checkPathBetweenTiles(firstTileToMoveToward, secondTileToMoveToward)
-  console.log(`first selected to first move: ${firstSelToFirstMove}`);
-  console.log(`second selected to second move: ${secondSelToSecondMove}`);
-  console.log(`first move to second move: ${firstMoveToSecondMove}`);
 
   if (firstSelToFirstMove && secondSelToSecondMove && firstMoveToSecondMove && !isTileAtFirst && !isTileAtSecond) return true
   return false
