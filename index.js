@@ -1,32 +1,10 @@
-//x: start coord: 8, end coord: 580
-//y: start coord: 8, end coord: 404
-
-//The images are currently entered manually
-let imageDirectory = "Warrior"
-let images = ["1", "2", "3", "4", "5", "6", "7",
-  "8", "9", "10", "11", "12", "13", "14", "15", "16",
-  "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34",
-  "35", "36", "37", "38", "39", "40", "41", "42", "43"]
-let selectedImages = selectNRandomImages(25)
 //Distance between 2 adjacent tiles along one axis. The distance is calculated between each of the tiles' top-left corner.
 const GAP = 44
+
 //Currently selected tiles. Both can be "selected", but as soon as the second one is selected, they get de-selected after
 //determining whether they get deleted or not
 firstSelected = {}
 secondSelected = {}
-
-function selectNRandomImages(n) {
-  let randomImages = []
-  for (let i = 1; i <= n; i++) {
-    let img = Math.floor(Math.random() * images.length);
-    while (randomImages.includes(images[img])) {
-      img = Math.floor(Math.random() * images.length);
-    }
-    randomImages.push(images[img])
-  }
-  console.log(randomImages);
-  return randomImages
-}
 
 populateRows()
 
@@ -35,43 +13,11 @@ populateRows()
 function populateRows() {
   let wrapper = document.querySelector(".wrapper")
 
-  for (let i = 0; i < firstLevel.length; i++) {
-    let cell = createCell(firstLevel[i])
+  for (let i = 0; i < currentLevel.coords.length; i++) {
+    let cell = createCell(currentLevel.coords[i])
     wrapper.append(cell)
   }
   populateCellsWithImages()
-}
-
-function populateCellsWithImages() {
-  cells = document.querySelectorAll('.cell')
-  if (cells.length % 2 === 1) throw new Error('Odd number of cells!') 
-
-  pic = getRandomImage()
-  cellsWithoutPics = getCellIndicesWithoutPics(cells)
-
-  while (cellsWithoutPics.length > 0) {
-    randomCellPos = Math.floor(Math.random() * cellsWithoutPics.length);
-    randomCellIndex = cellsWithoutPics[randomCellPos]
-    addGivenPictureToCell(cells[randomCellIndex], pic)
-
-    //do it a second time with the same image to ensure that every image appears an even number of times.
-    cellsWithoutPics = getCellIndicesWithoutPics(cells)
-    randomCellPos = Math.floor(Math.random() * cellsWithoutPics.length);
-    randomCellIndex = cellsWithoutPics[randomCellPos]
-    addGivenPictureToCell(cells[randomCellIndex], pic)
-
-    //Finally generate a new pic and recreate cells without pics.
-    pic = getRandomImage()
-    cellsWithoutPics = getCellIndicesWithoutPics(cells)
-  }
-}
-
-function getCellIndicesWithoutPics(cells) {
-  let cellsWithoutPics = []
-  for (let i = 0; i < cells.length; i++) {
-    if (!cells[i].firstChild) cellsWithoutPics.push(i)
-  }
-  return cellsWithoutPics
 }
 
 function createCell(coords) {
@@ -87,27 +33,6 @@ function createCell(coords) {
   });
 
   return cell
-}
-
-function addGivenPictureToCell(cell, picture) {
-  let pic = document.createElement('img')
-  pic.className = 'cell-img'
-  pic.src = picture
-
-  cell.append(pic)
-}
-
-function addPictureToCell(cell) {
-  let pic = document.createElement('img')
-  pic.className = 'cell-img'
-  pic.src = getRandomImage()
-
-  cell.append(pic)
-}
-
-function getRandomImage() {
-  const img = Math.floor(Math.random() * selectedImages.length);
-  return `${imageDirectory}/${selectedImages[img]}.png`
 }
 
 //Selects a tile based on the tile you've clicked on. When a second tile is selected, determines if they are to be deleted or not.
@@ -252,3 +177,6 @@ function removeElement(selection) {
   selectedCell = selection.cell
   selectedCell.parentElement.removeChild(selectedCell)
 }
+
+//x: start coord: 8, end coord: 580
+//y: start coord: 8, end coord: 404
