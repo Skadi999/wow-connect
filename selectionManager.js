@@ -38,7 +38,7 @@ function compareSelections() {
     addBorderToFirstSelected()
     return
   }
-  
+
   //Else, check if tiles are to be deleted. If yes - delete. If no, remove visual border. Selections will be cleared regardless.
   if (compareCoordinates()) {
     removeTilesAndCheckForVictory()
@@ -120,6 +120,7 @@ function tileConditions(firstTileToMoveToward, secondTileToMoveToward) {
   return false
 }
 
+//TODO refactor this
 function checkPathBetweenTiles(firstSelected, secondSelected) {
   //Checks if the path between tiles is a straight line in which no other tiles stand in the way.
 
