@@ -5,12 +5,12 @@ secondSelected = {}
 
 //Selects a tile based on the tile you've clicked on. When a second tile is selected, determines if they are to be deleted or not.
 function handleIconClick(event) {
-  if (Object.keys(firstSelected).length === 0) {
+  if (isObjEmpty(firstSelected)) {
     firstSelected = selectIcon(event)
-    event.target.classList.add("selected-cell")
-  } else if (Object.keys(secondSelected).length === 0) {
+    addBorderToFirstSelected()
+  } else if (isObjEmpty(secondSelected)) {
     secondSelected = selectIcon(event)
-    checkSelections()
+    compareSelections()
   }
   // console.log(firstSelected);
 }
@@ -25,21 +25,34 @@ function selectIcon(event) {
   return selectedIcon
 }
 
-function checkSelections() {
-  //if images are not the same, deselect and exit.
-  if (firstSelected.img !== secondSelected.img) {
+function testSelectionConditions() {
+  return isSelectedImagesMatching() && compareCoordinates()
+}
+
+function compareSelections() {
+  //if images are not the same, transfer selection from second to first, unselect second and exit.
+  if (!isSelectedImagesMatching()) {
     removeBorder()
-    firstSelected = {}
+    firstSelected = secondSelected
     secondSelected = {}
+    addBorderToFirstSelected()
     return
   }
+  
   //Else, check if tiles are to be deleted. If yes - delete. If no, remove visual border. Selections will be cleared regardless.
   if (compareCoordinates()) {
     removeTilesAndCheckForVictory()
   } else {
     removeBorder()
   }
+  clearSelections()
+}
 
+function isSelectedImagesMatching() {
+  return firstSelected.img === secondSelected.img
+}
+
+function clearSelections() {
   firstSelected = {}
   secondSelected = {}
 }
@@ -48,6 +61,7 @@ function removeTilesAndCheckForVictory() {
   removeElement(firstSelected)
   removeElement(secondSelected)
   if (isGameWon()) victory()
+  else isAnyAvailableConnections()
 }
 
 function compareCoordinates() {
@@ -145,6 +159,10 @@ function isExistsTileAtCoords(x, y) {
   return false
 }
 
+function addBorderToFirstSelected() {
+  firstSelected.cell.childNodes[0].classList.add("selected-cell")
+}
+
 function removeBorder() {
   let elem = document.querySelector(".selected-cell")
   elem.classList.remove("selected-cell")
@@ -171,4 +189,32 @@ function victory() {
   levelCounter++
   currentLevel = levels[levelCounter]
   populateRows()
+}
+
+function isAnyAvailableConnections() {
+  let tiles = document.querySelectorAll('.cell')
+
+  for (let i = 0; i < tiles.length; i++) {
+    firstSelected = {
+      "cell": tiles[i],
+      "img": tiles[i].childNodes[0].src,
+      "x": tiles[i].childNodes[0].getBoundingClientRect().x,
+      "y": tiles[i].childNodes[0].getBoundingClientRect().y,
+    }
+    for (let j = 0; j < tiles.length; j++) {
+      secondSelected = {
+        "cell": tiles[j],
+        "img": tiles[j].childNodes[0].src,
+        "x": tiles[j].childNodes[0].getBoundingClientRect().x,
+        "y": tiles[j].childNodes[0].getBoundingClientRect().y,
+      }
+      if (testSelectionConditions()) {
+        // console.log(`Tiles matching: [${firstSelected.x} ${firstSelected.y}]--- [${secondSelected.x} ${secondSelected.y}]`);
+        clearSelections()
+        return
+      }
+    }
+  }
+  console.log("No Tiles matching!");
+  clearSelections()
 }

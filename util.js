@@ -6,3 +6,7 @@ function selectRandomIndexFromArray(arr) {
 function selectRandomElementFromArray(arr) {
   return arr[selectRandomIndexFromArray(arr)]
 }
+
+function isObjEmpty(obj) {
+  return Object.keys(obj).length === 0
+}
