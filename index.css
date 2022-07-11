@@ -17,6 +17,7 @@
 .cell img:hover {
   border: 3px solid green;
   border-radius: 5px;
+  cursor: pointer;
 }
 
 .selected-cell {
